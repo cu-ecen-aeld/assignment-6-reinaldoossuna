@@ -1,0 +1,82 @@
+From dc377181c2a4c4f3d6327ab105fdd5d6523b9062 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Sat, 25 May 2024 18:46:31 -0400
+Subject: [PATCH] modify makefile to receive KERNEL_SRC
+
+---
+ misc-modules/Makefile | 23 ++++++-----------------
+ scull/Makefile        | 15 +++------------
+ 2 files changed, 9 insertions(+), 29 deletions(-)
+
+diff --git a/misc-modules/Makefile b/misc-modules/Makefile
+index f4e6e34..3bbe175 100644
+--- a/misc-modules/Makefile
++++ b/misc-modules/Makefile
+@@ -8,29 +8,18 @@
+ LDDINC=$(PWD)/../include
+ EXTRA_CFLAGS += -I$(LDDINC)
+ 
+-ifeq ($(KERNELRELEASE),)
+-
+-    # Assume the source tree is where the running kernel was built
+-    # You should set KERNELDIR in the environment if it's elsewhere
+-    KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+-    # The current directory is passed to sub-makes as argument
+-    PWD := $(shell pwd)
++PWD := $(shell pwd)
++# called from kernel build system: just declare what our modules are
++obj-m := hello.o hellop.o seq.o jiq.o sleepy.o complete.o \
++			silly.o faulty.o kdatasize.o kdataalign.o jit.o
+ 
+ modules:
+-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
++	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) modules
+ 
+ modules_install:
+-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
++	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) modules_install
+ 
+ clean:
+ 	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions *.mod modules.order *.symvers
+ 
+ .PHONY: modules modules_install clean
+-
+-else
+-    # called from kernel build system: just declare what our modules are
+-    obj-m := hello.o hellop.o seq.o jiq.o sleepy.o complete.o \
+-             silly.o faulty.o kdatasize.o kdataalign.o jit.o
+-endif
+-
+-
+diff --git a/scull/Makefile b/scull/Makefile
+index 3f6c8d0..3491708 100644
+--- a/scull/Makefile
++++ b/scull/Makefile
+@@ -14,24 +14,15 @@ LDDINC=$(PWD)/../include
+ EXTRA_CFLAGS += $(DEBFLAGS)
+ EXTRA_CFLAGS += -I$(LDDINC)
+ 
+-ifneq ($(KERNELRELEASE),)
+-# call from kernel build system
+-
+ scull-objs := main.o pipe.o access.o
+-
+ obj-m	:= scull.o
+-
+-else
+-
+-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+ PWD       := $(shell pwd)
+ 
+ modules:
+-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+-
+-endif
+-
++	$(MAKE) -C $(KERNEL_SRC) M=$(PWD) modules
+ 
++modules_install:
++	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules_install
+ 
+ clean:
+ 	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions *.mod modules.order *.symvers

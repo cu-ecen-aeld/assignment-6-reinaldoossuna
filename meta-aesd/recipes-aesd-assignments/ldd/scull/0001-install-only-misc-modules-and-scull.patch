@@ -1,0 +1,23 @@
+From a3ca1cb06421fdc6cf8354e269eddb5cbd63880b Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Sat, 25 May 2024 13:20:45 -0400
+Subject: [PATCH] install only misc-modules and scull
+
+---
+ Makefile | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 7b08c49..c4f2e2e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,5 @@
+ 
+-SUBDIRS =  misc-progs misc-modules \
+-           skull scull scullc scullp lddbus sculld scullv shortprint simple tty \
+-	   pci usb\
+-	   sbull snull short
++SUBDIRS =  misc-modules scull
+ 
+ all: subdirs
+ 

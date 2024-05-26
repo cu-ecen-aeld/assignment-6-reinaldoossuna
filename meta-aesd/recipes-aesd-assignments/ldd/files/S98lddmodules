@@ -1,0 +1,65 @@
+#! /bin/sh
+
+case "$1" in
+    start)
+
+        mode="664"
+
+        # Group: since distributions do it differently, look for wheel or use staff
+        if grep -q '^staff:' /etc/group; then
+            group="staff"
+        else
+            group="wheel"
+        fi
+        echo "Starting scull"
+
+        modprobe scull || exit 1
+
+        # retrieve major number
+        major=$(awk "\$2==\"scull\" {print \$1}" /proc/devices)
+
+        # Remove stale nodes and replace them, then give gid and perms
+        # Usually the script is shorter, it's scull that has several devices in it.
+
+        rm -f /dev/scull[0-3]
+        mknod /dev/scull0 c $major 0
+        mknod /dev/scull1 c $major 1
+        mknod /dev/scull2 c $major 2
+        mknod /dev/scull3 c $major 3
+        ln -sf scull0 /dev/scull
+        chgrp $group /dev/scull[0-3]
+        chmod $mode  /dev/scull[0-3]
+
+        echo "starting faulty"
+
+        insmod /lib/modules/5.15.150-yocto-standard/extra/faulty.ko || exit 1
+        major=$(awk "\$2==\"faulty\" {print \$1}" /proc/devices)
+        rm -f /dev/faulty
+        mknod /dev/faulty c $major 0
+        chgrp $group /dev/faulty
+        chmod $mode  /dev/faulty
+
+        echo "starting hello"
+
+        modprobe hello || exit 1
+
+    ;;
+    stop)
+        echo "stopping hello"
+        modprobe -r hello || exit 1
+        echo "stopping faulty"
+
+        rmmod -f faulty || exit 1
+        rm -f /dev/faulty
+
+        echo "Stopping scull"
+        # invoke rmmod with all arguments we got
+        modprobe -r scull || exit 1
+        # Remove stale nodes
+        rm -f /dev/scull /dev/scull[0-3]
+        ;;
+    *)
+        exit 1
+esac
+
+exit 0
