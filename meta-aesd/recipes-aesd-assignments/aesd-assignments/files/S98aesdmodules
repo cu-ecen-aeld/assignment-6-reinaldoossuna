@@ -1,0 +1,37 @@
+#! /bin/sh
+
+case "$1" in
+    start)
+
+        mode="664"
+
+        # Group: since distributions do it differently, look for wheel or use staff
+        if grep -q '^staff:' /etc/group; then
+            group="staff"
+        else
+            group="wheel"
+        fi
+        echo "Starting aesdchar"
+
+        modprobe aesdchar || exit 1
+
+        # retrieve major number
+        major=$(awk "\$2==\"aesdchar\" {print \$1}" /proc/devices)
+
+        rm -f /dev/aesdchar
+        mknod /dev/aesdchar c $major 0
+        chgrp $group /dev/aesdchar
+        chmod $mode  /dev/aesdchar
+    ;;
+    stop)
+        echo "Stopping aesdchar"
+        # invoke rmmod with all arguments we got
+        modprobe -r aesdchar || exit 1
+        # Remove stale nodes
+        rm -f /dev/aesdchar
+        ;;
+    *)
+        exit 1
+esac
+
+exit 0
