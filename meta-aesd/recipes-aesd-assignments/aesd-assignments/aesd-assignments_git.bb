@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 SRC_URI = "git://git@github.com/cu-ecen-aeld/assignments-3-and-later-reinaldoossuna.git;protocol=ssh;branch=main"
 
 PV = "1.0+git${SRCPV}"
-SRCREV = "802cee57a38050e1d3f5e33b72e176ccab69decd"
+SRCREV = "2b11676c24aa1c218f4e928011433da62a94bd82"
 
 S = "${WORKDIR}/git/server"
 
